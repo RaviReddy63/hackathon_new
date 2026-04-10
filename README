@@ -1,0 +1,74 @@
+# ⚡ Execution Agent — Multi-Agent Performance Testing Platform
+
+Wells Fargo Hackathon | Data Platform Performance Testing
+
+---
+
+## Project Structure
+
+```
+perf_agent/
+├── app.py                          # Streamlit dashboard
+├── orchestrator.py                 # Supervisor — chains all agents
+├── requirements.txt
+├── .env.template                   # Copy to .env and fill in your values
+├── agents/
+│   ├── pipeline_discovery_agent.py # Step 1: Parse pipeline spec
+│   ├── synthetic_data_agent.py     # Step 2: Generate mock datasets
+│   ├── workload_execution_agent.py # Step 3: Simulate workload execution
+│   ├── telemetry_agent.py          # Step 4: Collect runtime metrics
+│   ├── rca_agent.py                # Step 5: Root cause analysis
+│   └── remediation_agent.py        # Step 6: Optimization recommendations
+├── data/                           # Generated synthetic CSVs (auto-created)
+└── outputs/                        # Output metrics CSVs (auto-created)
+```
+
+---
+
+## Quick Start
+
+### Demo Mode (No Tachyon/Vault required)
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+Toggle **Demo Mode ON** in the sidebar. All data is synthetic.
+
+### Live Mode (Tachyon + Vault)
+```bash
+cp .env.template .env
+# Fill in your Vault, APIGEE, Tachyon credentials
+streamlit run app.py
+```
+Toggle **Demo Mode OFF** in the sidebar.
+
+### Run pipeline from CLI
+```bash
+# Demo mode
+python orchestrator.py demo
+
+# Live mode
+python orchestrator.py live
+```
+
+---
+
+## What Each Agent Does
+
+| Agent | Input | Output |
+|---|---|---|
+| Pipeline Discovery | Pipeline definition dict | Unified spec (stages, SLOs, tunables) |
+| Synthetic Data Gen | Pipeline spec | CSV files in `data/` |
+| Workload Execution | Pipeline spec + data summary | `execution_metrics.csv` |
+| Telemetry Collector | Execution metrics | `telemetry_timeseries.csv` |
+| RCA & Insights | Execution + telemetry | `rca_bottlenecks.csv` |
+| Remediation | RCA result | `remediation_recommendations.csv` |
+
+---
+
+## Tech Stack
+- **LLM**: Claude via Tachyon ADK (Google ADK + TachyonAdkClient)
+- **Secrets**: HashiCorp Vault + APIGEE OAuth
+- **UI**: Streamlit + Plotly
+- **Data**: Pandas + NumPy
+- **Demo fallback**: All agents have local rule-based fallbacks
